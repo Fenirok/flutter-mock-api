@@ -34,20 +34,18 @@ server.post('/chat', (req, res) => {
     );
 
     if (match) {
-      return res.json([
-        {
+      return res.json({
         status: "success",
         message: match.message,
         reply: match.reply
-      }
-    ]);
+      });
     }
 
-    return res.json([{
+    return res.json({
       status: "not_found",
       message: userMessage,
       reply: "Sorry, I don't have an answer for that."
-    }]);
+    });
 
   } catch (error) {
     console.error(error);
