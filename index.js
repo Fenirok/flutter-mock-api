@@ -15,6 +15,6 @@ server.use(jsonServer.rewriter({
 server.use(middlewares);
 server.use(router);
 
-server.listen(port, () => {
-  console.log('Mock API is running on http://localhost:' + port);
+server.listen(port, '0.0.0.0', () => {
+  console.log('Mock API is running on port ' + port);
 });
