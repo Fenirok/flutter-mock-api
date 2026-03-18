@@ -5,20 +5,16 @@ const middlewares = jsonServer.defaults();
 
 const port = process.env.PORT || 3000;
 
-// Route mapping
+// FIXED rewriter (removed /chat)
 server.use(jsonServer.rewriter({
   "/chat/history": "/chat_history_data",
-  "/chat": "/chat_posts_data",
   "/suggestions": "/suggestions_data"
 }));
 
-// Default middlewares
 server.use(middlewares);
-
-// CRITICAL: Body parser (fixes 502)
 server.use(jsonServer.bodyParser);
 
-// CUSTOM POST LOGIC (your main feature)
+// POST /chat works now
 server.post('/chat', (req, res) => {
   try {
     const userMessage = req.body?.message;
@@ -33,7 +29,6 @@ server.post('/chat', (req, res) => {
     const db = router.db;
     const chats = db.get('chat_posts_data').value();
 
-    // Case-insensitive exact match
     const match = chats.find(
       item => item.message.toLowerCase() === userMessage.toLowerCase()
     );
@@ -46,7 +41,6 @@ server.post('/chat', (req, res) => {
       });
     }
 
-    // No match found
     return res.json({
       status: "not_found",
       message: userMessage,
@@ -54,7 +48,7 @@ server.post('/chat', (req, res) => {
     });
 
   } catch (error) {
-    console.error("POST /chat error:", error);
+    console.error(error);
     return res.status(500).json({
       status: "error",
       message: "Internal server error"
@@ -62,14 +56,19 @@ server.post('/chat', (req, res) => {
   }
 });
 
-// Block ALL other POST/PUT/PATCH/DELETE (prevent data corruption)
+// Optional GET /chat
+server.get('/chat', (req, res) => {
+  const db = router.db;
+  const chats = db.get('chat_posts_data').value();
+  res.json(chats);
+});
+
+// Block unwanted writes
 server.use((req, res, next) => {
-  // Allow POST /chat
   if (req.method === 'POST' && req.path === '/chat') {
     return next();
   }
 
-  // Block all other write operations
   if (
     req.method === 'POST' ||
     req.method === 'PUT' ||
@@ -84,10 +83,8 @@ server.use((req, res, next) => {
   next();
 });
 
-// GET routes still work
 server.use(router);
 
-// Start server
 server.listen(port, '0.0.0.0', () => {
   console.log('Mock API running on port ' + port);
 });
