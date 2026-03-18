@@ -13,7 +13,7 @@ server.use(jsonServer.rewriter({
 
 server.use(middlewares);
 
-// 🔥 CUSTOM POST LOGIC
+// CUSTOM POST LOGIC
 server.post('/chat', (req, res) => {
   const userMessage = req.body.message;
 
@@ -27,7 +27,7 @@ server.post('/chat', (req, res) => {
   const db = router.db; // lowdb instance
   const chats = db.get('chat_posts_data').value();
 
-  // 🔍 Find matching message (case-insensitive)
+  // Find matching message (case-insensitive)
   const match = chats.find(
     item => item.message.toLowerCase() === userMessage.toLowerCase()
   );
@@ -40,7 +40,7 @@ server.post('/chat', (req, res) => {
     });
   }
 
-  // ❌ If no match
+  // If no match
   return res.json({
     status: "not_found",
     message: userMessage,
@@ -48,7 +48,7 @@ server.post('/chat', (req, res) => {
   });
 });
 
-// 🚫 Prevent json-server from saving POST data
+// Prevent json-server from saving POST data
 server.use((req, res, next) => {
   if (req.method === 'POST') {
     return; // already handled above
