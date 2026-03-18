@@ -5,6 +5,14 @@ const middlewares = jsonServer.defaults();
 
 const port = process.env.PORT || 3000;
 
+// NEW: normalize function (IMPORTANT)
+const normalize = (text) => {
+  return text
+    .toLowerCase()
+    .replace(/[?.,!]/g, '') // remove punctuation
+    .trim();
+};
+
 // FIXED rewriter (removed /chat)
 server.use(jsonServer.rewriter({
   "/chat/history": "/chat_history_data",
@@ -29,21 +37,23 @@ server.post('/chat', (req, res) => {
     const db = router.db;
     const chats = db.get('chat_posts_data').value();
 
+    // UPDATED MATCHING LOGIC
+    const normalizedUser = normalize(userMessage);
+
     const match = chats.find(
-      item => item.message.toLowerCase() === userMessage.toLowerCase()
+      item =>
+        normalizedUser.includes(normalize(item.message))
     );
 
     if (match) {
       return res.json({
         status: "success",
-        message: match.message,
-        reply: match.reply
+        reply: match.reply // cleaner response
       });
     }
 
     return res.json({
       status: "not_found",
-      message: userMessage,
       reply: "Sorry, I don't have an answer for that."
     });
 
