@@ -64,6 +64,12 @@ server.post('/chat', (req, res) => {
 
 // Block ALL other POST/PUT/PATCH/DELETE (prevent data corruption)
 server.use((req, res, next) => {
+  // Allow POST /chat
+  if (req.method === 'POST' && req.path === '/chat') {
+    return next();
+  }
+
+  // Block all other write operations
   if (
     req.method === 'POST' ||
     req.method === 'PUT' ||
@@ -74,6 +80,7 @@ server.use((req, res, next) => {
       error: "Write operations are disabled in this mock API"
     });
   }
+
   next();
 });
 
@@ -82,5 +89,5 @@ server.use(router);
 
 // Start server
 server.listen(port, '0.0.0.0', () => {
-  console.log('🔥 Mock API running on port ' + port);
+  console.log('Mock API running on port ' + port);
 });
